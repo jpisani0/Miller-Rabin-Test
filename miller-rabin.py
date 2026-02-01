@@ -24,7 +24,7 @@ def miller_rabin(n, k=40):
         return True
 
     # Step 1
-    # We set to d n - 1 as d = (n-1)/(2^s). Then keep dividing n-1 by 2^s, incrementing s until the result is not an integer
+    # We set d to n - 1 as d = (n-1)/(2^s). Then keep dividing n-1 by 2^s, incrementing s until d is no longer divisible by 2
     d = n - 1
     s = 0
 
@@ -32,7 +32,7 @@ def miller_rabin(n, k=40):
         d //= 2
         s += 1
 
-    for i in range(k):
+    for _ in range(k):
         # Step 2
         # Choose a random base, 'a' to test with
         a = secrets.randbelow(n - 3) + 2  # Ensures 2 <= a <= n-2
@@ -40,10 +40,15 @@ def miller_rabin(n, k=40):
         # Compute b_0 = a^d (mod n)
         b = pow(a, d, n)
 
+        # Step 3
+        # If b_0 is 1 or n - 1, pass, n could be prime
         if b == 1 or b == n - 1:
             continue
 
-        for j in range(s - 1):
+        # If not, calculate b_1 to b_i, where i = s-1.
+        # If we find n - 1, pass, this number could be prime
+        # If we find b_i == 1 before b_i-1 == n - 1, or never find a b_i == n - 1, this number is composite
+        for _ in range(s - 1):
             b = pow(b, 2, n)
 
             if b == n - 1:
@@ -76,7 +81,7 @@ def generate_prime(len, k=40):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='Miller-Rabin Test', description='Generate a random prime number or verify if a number is prime with the Miller-Rabin Primality Test')
+    parser = argparse.ArgumentParser(prog='Miller-Rabin Test', description='Generate a random prime number with the Miller-Rabin Primality Test')
 
     parser.add_argument('-l', '--length', type=int, default=512, help='Length of the prime number to be generated. Default=512')
     parser.add_argument('-k', '--num-tries', type=int, default=40, help='Number of bases to check against the candidate before determining primality. Default=40')
